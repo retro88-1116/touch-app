@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>어르신 터치 연습 앱</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-size: 1.5em;
+            text-align: center;
+            touch-action: manipulation;
+        }
+        .touch-area {
+            width: 200px;
+            height: 200px;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+            border-radius: 20px;
+            user-select: none;
+            font-size: 1.2em;
+        }
+        .drag-area {
+            width: 300px;
+            height: 300px;
+            border: 2px dashed #333;
+            position: relative;
+            margin: 20px;
+        }
+        .draggable {
+            width: 50px;
+            height: 50px;
+            background-color: #2196F3;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            cursor: move;
+            user-select: none;
+        }
+        .feedback {
+            font-size: 1.5em;
+            color: #333;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>터치 연습 앱</h1>
+    <div class="touch-area" id="tapArea">여기를 눌러보세요!</div>
+    <div class="drag-area" id="dragArea">
+        <div class="draggable" id="draggable"></div>
+    </div>
+    <div class="feedback" id="feedback">동작을 시작해보세요!</div>
+
+    <script>
+        // 탭 연습
+        const tapArea = document.getElementById('tapArea');
+        const feedback = document.getElementById('feedback');
+
+        tapArea.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            tapArea.style.backgroundColor = '#FF5722';
+            feedback.textContent = '잘하셨어요! 터치 성공!';
+            if (navigator.vibrate) navigator.vibrate(200);
+            setTimeout(() => {
+                tapArea.style.backgroundColor = '#4CAF50';
+                feedback.textContent = '다시 눌러보세요!';
+            }, 1000);
+        });
+
+        // 드래그 연습
+        const draggable = document.getElementById('draggable');
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        draggable.addEventListener('touchstart', startDragging);
+        draggable.addEventListener('touchend', stopDragging);
+        draggable.addEventListener('touchmove', drag);
+
+        function startDragging(e) {
+            initialX = e.touches[0].clientX - xOffset;
+            initialY = e.touches[0].clientY - yOffset;
+
+            if (e.target === draggable) {
+                isDragging = true;
+            }
+        }
+
+        function stopDragging() {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+            feedback.textContent = '잘 옮기셨어요! 다시 시도해보세요!';
+            if (navigator.vibrate) navigator.vibrate(200);
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+
+                xOffset = currentX;
+                yOffset = currentY;
+
+                setTranslate(currentX, currentY, draggable);
+                feedback.textContent = '움직이는 중이에요!';
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+        }
+
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker 등록 성공'))
+                    .catch(err => console.log('Service Worker 등록 실패:', err));
+            });
+        }
+    </script>
+</body>
+</html>
