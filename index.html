@@ -1,146 +1,195 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>어르신 터치 연습 앱</title>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon.png">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-size: 1.5em;
-            text-align: center;
-            touch-action: manipulation;
-        }
-        .touch-area {
-            width: 200px;
-            height: 200px;
-            background-color: #4CAF50;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px;
-            border-radius: 20px;
-            user-select: none;
-            font-size: 1.2em;
-        }
-        .drag-area {
-            width: 300px;
-            height: 300px;
-            border: 2px dashed #333;
-            position: relative;
-            margin: 20px;
-        }
-        .draggable {
-            width: 50px;
-            height: 50px;
-            background-color: #2196F3;
-            border-radius: 50%;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            cursor: move;
-            user-select: none;
-        }
-        .feedback {
-            font-size: 1.5em;
-            color: #333;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>어르신 터치 & 마우스 클릭 연습</title>
+  <style>
+    :root {
+      --primary-color: #2E7D32;
+      --primary-hover: #1B5E20;
+      --accent-color: #1976D2;
+      --bg-color: #F8F9FA;
+      --card-bg: #FFFFFF;
+      --text-main: #212121;
+      --text-sub: #616161;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', 'Malgun Gothic', -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-sub);
+      margin-bottom: 28px;
+    }
+
+    /* 반응형 버튼 */
+    .touch-btn {
+      width: 100%;
+      min-height: 72px;
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+      font-size: 22px;
+      font-weight: 700;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+      transition: background-color 0.15s, transform 0.1s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      touch-action: manipulation;
+    }
+
+    .touch-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .touch-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* 게임 영역 */
+    .game-area {
+      width: 100%;
+      height: 240px;
+      background-color: #F0F4F8;
+      border: 2px dashed #B0BEC5;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    /* 타겟 파란 원 */
+    .target-circle {
+      width: 56px;
+      height: 56px;
+      background: radial-gradient(circle at 30% 30%, #42A5F5, #1565C0);
+      border-radius: 50%;
+      position: absolute;
+      top: 92px;
+      left: 212px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(21, 101, 192, 0.4);
+      transition: transform 0.1s, top 0.2s ease-out, left 0.2s ease-out;
+      touch-action: manipulation;
+    }
+
+    .target-circle:active {
+      transform: scale(0.85);
+    }
+
+    /* 상태 표시 */
+    .status-card {
+      background-color: #E8F5E9;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-color);
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
-    <h1>터치 연습 앱</h1>
-    <div class="touch-area" id="tapArea">여기를 눌러보세요!</div>
-    <div class="drag-area" id="dragArea">
-        <div class="draggable" id="draggable"></div>
+
+  <div class="container">
+    <h1 class="title">터치 & 클릭 연습</h1>
+    <p class="subtitle">버튼을 누르거나 파란 원을 맞혀보세요</p>
+
+    <!-- 연습 버튼 -->
+    <button id="mainBtn" class="touch-btn">여기를 눌러보세요!</button>
+
+    <!-- 연습 영역 -->
+    <div id="gameArea" class="game-area">
+      <div id="target" class="target-circle"></div>
     </div>
-    <div class="feedback" id="feedback">동작을 시작해보세요!</div>
 
-    <script>
-        // 탭 연습
-        const tapArea = document.getElementById('tapArea');
-        const feedback = document.getElementById('feedback');
+    <!-- 상태 정보 -->
+    <div id="status" class="status-card">준비되시면 화면의 요소를 눌러보세요!</div>
+  </div>
 
-        tapArea.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            tapArea.style.backgroundColor = '#FF5722';
-            feedback.textContent = '잘하셨어요! 터치 성공!';
-            if (navigator.vibrate) navigator.vibrate(200);
-            setTimeout(() => {
-                tapArea.style.backgroundColor = '#4CAF50';
-                feedback.textContent = '다시 눌러보세요!';
-            }, 1000);
-        });
+  <script>
+    const mainBtn = document.getElementById('mainBtn');
+    const target = document.getElementById('target');
+    const gameArea = document.getElementById('gameArea');
+    const status = document.getElementById('status');
 
-        // 드래그 연습
-        const draggable = document.getElementById('draggable');
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
+    let pressCount = 0;
 
-        draggable.addEventListener('touchstart', startDragging);
-        draggable.addEventListener('touchend', stopDragging);
-        draggable.addEventListener('touchmove', drag);
+    // 통합 포인터 이벤트 (마우스, 터치, 펜 호환)
+    mainBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      pressCount++;
+      status.style.backgroundColor = "#E8F5E9";
+      status.style.color = "#2E7D32";
+      status.innerText = `녹색 버튼을 ${pressCount}번 누르셨습니다!`;
+    });
 
-        function startDragging(e) {
-            initialX = e.touches[0].clientX - xOffset;
-            initialY = e.touches[0].clientY - yOffset;
+    target.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-            if (e.target === draggable) {
-                isDragging = true;
-            }
-        }
+      // 타겟 이동 로직 (영역 내부 안전 보장)
+      const areaWidth = gameArea.clientWidth;
+      const areaHeight = gameArea.clientHeight;
+      const targetSize = 56;
 
-        function stopDragging() {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-            feedback.textContent = '잘 옮기셨어요! 다시 시도해보세요!';
-            if (navigator.vibrate) navigator.vibrate(200);
-        }
+      const maxLeft = areaWidth - targetSize - 16;
+      const maxTop = areaHeight - targetSize - 16;
 
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.touches[0].clientX - initialX;
-                currentY = e.touches[0].clientY - initialY;
+      const newLeft = Math.max(16, Math.floor(Math.random() * maxLeft));
+      const newTop = Math.max(16, Math.floor(Math.random() * maxTop));
 
-                xOffset = currentX;
-                yOffset = currentY;
+      target.style.left = `${newLeft}px`;
+      target.style.top = `${newTop}px`;
 
-                setTranslate(currentX, currentY, draggable);
-                feedback.textContent = '움직이는 중이에요!';
-            }
-        }
+      status.style.backgroundColor = "#E3F2FD";
+      status.style.color = "#1565C0";
+      status.innerText = "명중! 파란 원을 맞추셨습니다.";
+    });
+  </script>
 
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = `translate(${xPos}px, ${yPos}px)`;
-        }
-
-        // 서비스 워커 등록
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(reg => console.log('Service Worker 등록 성공'))
-                    .catch(err => console.log('Service Worker 등록 실패:', err));
-            });
-        }
-    </script>
 </body>
 </html>
